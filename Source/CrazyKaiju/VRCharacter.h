@@ -53,6 +53,9 @@ private:
 		class UCurveFloat* VignetteVelocityRadius = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+		float MovementSpeedMultiplier = 0.2f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 		float TeleportTime = 3.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup") // TODO REMOVE
@@ -90,6 +93,5 @@ private:
 
 	UPROPERTY()
 		class UMaterialInstanceDynamic* VignetteInstanceDynamic = nullptr;
-
 
 };

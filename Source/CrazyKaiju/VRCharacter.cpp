@@ -35,12 +35,12 @@ AVRCharacter::AVRCharacter()
 	// Motion Controllers
 	MotionControllerLeft = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Motion Controller - Left"));
 	MotionControllerRight = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Motion Controller - Right"));
-	MotionControllerLeft->SetupAttachment(GetRootComponent());
-	MotionControllerRight->SetupAttachment(GetRootComponent());
+	MotionControllerLeft->SetupAttachment(VRRoot);
+	MotionControllerRight->SetupAttachment(VRRoot);
 	MotionControllerLeft->MotionSource = FXRMotionControllerBase::LeftHandSourceId;
 	MotionControllerRight->MotionSource = FXRMotionControllerBase::RightHandSourceId;
-	MotionControllerLeft->bDisplayDeviceModel = true;
-	MotionControllerRight->bDisplayDeviceModel = true;
+	MotionControllerLeft->SetVisibility(false);
+	MotionControllerRight->SetVisibility(false);
 
 	// Destination Marker
 	DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Destination Mesh"));
@@ -202,12 +202,12 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AVRCharacter::MoveForward(float Throttle)
 {
-	AddMovementInput(Throttle * Camera->GetForwardVector());
+	AddMovementInput((Throttle * MovementSpeedMultiplier) * Camera->GetForwardVector());
 }
 
 void AVRCharacter::MoveRight(float Throttle)
 {
-	AddMovementInput(Throttle * Camera->GetRightVector());
+	AddMovementInput((Throttle * MovementSpeedMultiplier) * Camera->GetRightVector());
 }
 
 void AVRCharacter::RightTurn()
