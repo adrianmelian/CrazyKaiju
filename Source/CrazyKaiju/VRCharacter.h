@@ -35,16 +35,10 @@ private:
 	void LeftTurn();
 
 	void CorrectCameraOffset();
-	void UpdateDestinationMarker();
-
-	bool GetTeleportDestination(FVector& OutLocation);
-	void BeginTeleport();
-	void Teleport();
 
 	void StartFade(float start, float end);
 	void UpdateVignette();
 	FVector2D GetMovementCenter();
-
 
 	UPROPERTY(EditAnywhere)
 		class UMaterialInterface* VignetteMaterialBase = nullptr;

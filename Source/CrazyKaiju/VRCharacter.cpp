@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 //#include "Engine/World.h"
+#include "VRCharacter.h"
 #include "Engine/StaticMesh.h"
 #include "Curves/CurveFloat.h"
 #include "Camera/CameraComponent.h"
@@ -15,7 +16,7 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/Pawn.h"
 #include "NavigationSystem.h"
-#include "VRCharacter.h"
+//#include "DestructibleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -68,66 +69,9 @@ void AVRCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CorrectCameraOffset();
-	UpdateDestinationMarker();
 	UpdateVignette();
 }
 
-void AVRCharacter::UpdateDestinationMarker()
-{
-	FVector OutLocation;
-	bool bHitDestination = GetTeleportDestination(OutLocation);
-
-	if (bHitDestination)
-	{
-		DestinationMarker->SetVisibility(true);
-		DestinationMarker->SetWorldLocation(OutLocation);
-	}
-	else
-	{
-		DestinationMarker->SetVisibility(false);
-	}
-}
-
-bool AVRCharacter::GetTeleportDestination(FVector& OutLocation)
-{
-	auto Start = MotionControllerLeft->GetComponentLocation();
-	FVector Look = MotionControllerLeft->GetForwardVector();
-	Look.RotateAngleAxis(30, MotionControllerLeft->GetRightVector());
-	auto End = Start + Look * MaxTeleportDistance;
-
-	FPredictProjectilePathParams PredictParams(TeleportProjectileRadius, Start, Look * MaxTeleportSpeed, TeleportSimulationTime, ECollisionChannel::ECC_Visibility, this);
-	PredictParams.DrawDebugType = EDrawDebugTrace::ForOneFrame;
-	PredictParams.bTraceComplex = true;
-	FPredictProjectilePathResult PredictResult;
-	bool bHit = UGameplayStatics::PredictProjectilePath(this, PredictParams, PredictResult);
-	if (!bHit) return false;
-
-	FNavLocation NavLocation;
-	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
-	bool bHitNav = NavSystem->ProjectPointToNavigation(PredictResult.HitResult.Location, NavLocation, FVector(100, 100, 100));
-	if (!bHitNav) return false;
-
-	OutLocation = NavLocation.Location;
-
-	return true;
-}
-
-void AVRCharacter::BeginTeleport()
-{
-	StartFade(0, 1);
-
-	FTimerHandle Timer;
-	GetWorld()->GetTimerManager().SetTimer(Timer, this, &AVRCharacter::Teleport, 0.5f, false);
-}
-
-void AVRCharacter::Teleport()
-{
-	float HalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	FVector DestLocation = DestinationMarker->GetComponentLocation();
-	FVector Movement = FVector(DestLocation.X, DestLocation.Y, DestLocation.Z + HalfHeight);
-	SetActorLocation(Movement);
-	StartFade(1, 0);
-}
 
 void AVRCharacter::StartFade(float start, float end)
 {
@@ -194,7 +138,6 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
 	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
-	PlayerInputComponent->BindAction(TEXT("Teleport"), IE_Released, this, &AVRCharacter::BeginTeleport);
 	PlayerInputComponent->BindAction(TEXT("RightTurn"), IE_Released, this, &AVRCharacter::RightTurn);
 	PlayerInputComponent->BindAction(TEXT("LeftTurn"), IE_Released, this, &AVRCharacter::LeftTurn);
 
