@@ -27,6 +27,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UMotionControllerComponent* MotionControllerLeft;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UMotionControllerComponent* MotionControllerRight;
+
 private:
 	void MoveForward(float Throttle);
 	void MoveRight(float Throttle);
@@ -38,6 +44,9 @@ private:
 
 	void StartFade(float start, float end);
 	void UpdateVignette();
+
+	void UpdateForearmTwist();
+
 	FVector2D GetMovementCenter();
 
 	UPROPERTY(EditAnywhere)
@@ -69,12 +78,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 		class UCameraComponent* Camera = nullptr;
-
-	UPROPERTY(VisibleAnywhere)
-		class UMotionControllerComponent* MotionControllerLeft;
-
-	UPROPERTY(VisibleAnywhere)
-		class UMotionControllerComponent* MotionControllerRight;
 
 	UPROPERTY(VisibleAnywhere)
 		class USceneComponent* VRRoot = nullptr;
