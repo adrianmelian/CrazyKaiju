@@ -2,12 +2,27 @@
 
 
 #include "VRHand.h"
+#include "MotionControllerComponent.h"
 
 // Sets default values
 AVRHand::AVRHand()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// Root for movement
+	VRRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VR Root"));
+	VRRoot->SetupAttachment(GetRootComponent());
+
+	// Motion Controllers
+	MotionControllerLeft = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Motion Controller - Left"));
+	MotionControllerRight = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Motion Controller - Right"));
+	MotionControllerLeft->SetupAttachment(VRRoot);
+	MotionControllerRight->SetupAttachment(VRRoot);
+	MotionControllerLeft->MotionSource = FXRMotionControllerBase::LeftHandSourceId;
+	MotionControllerRight->MotionSource = FXRMotionControllerBase::RightHandSourceId;
+	MotionControllerLeft->SetVisibility(false);
+	MotionControllerRight->SetVisibility(false);
 
 }
 

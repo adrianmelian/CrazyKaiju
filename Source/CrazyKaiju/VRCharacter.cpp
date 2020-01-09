@@ -40,8 +40,8 @@ AVRCharacter::AVRCharacter()
 	MotionControllerRight->SetupAttachment(VRRoot);
 	MotionControllerLeft->MotionSource = FXRMotionControllerBase::LeftHandSourceId;
 	MotionControllerRight->MotionSource = FXRMotionControllerBase::RightHandSourceId;
-	//MotionControllerLeft->SetVisibility(false);
-	//MotionControllerRight->SetVisibility(false);
+	MotionControllerLeft->SetVisibility(false);
+	MotionControllerRight->SetVisibility(false);
 
 	// Destination Marker
 	DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Destination Mesh"));
@@ -57,7 +57,7 @@ void AVRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	DestinationMarker->SetVisibility(false);
-
+	
 	if (VignetteMaterialBase == nullptr) return;
 	VignetteInstanceDynamic = UMaterialInstanceDynamic::Create(VignetteMaterialBase, this);
 	PostProcessComponent->AddOrUpdateBlendable(VignetteInstanceDynamic);
@@ -70,7 +70,6 @@ void AVRCharacter::Tick(float DeltaTime)
 
 	CorrectCameraOffset();
 	UpdateVignette();
-	UpdateForearmTwist();
 }
 
 
@@ -93,10 +92,6 @@ void AVRCharacter::UpdateVignette()
 
 	FVector2D MovementCenter = GetMovementCenter();
 	VignetteInstanceDynamic->SetVectorParameterValue(FName("VignetteCenter"), FLinearColor(MovementCenter.X, MovementCenter.Y, 0));
-}
-
-void AVRCharacter::UpdateForearmTwist()
-{
 }
 
 FVector2D AVRCharacter::GetMovementCenter()

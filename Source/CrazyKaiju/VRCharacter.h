@@ -34,61 +34,59 @@ public:
 	class UMotionControllerComponent* MotionControllerRight;
 
 private:
+	// Movement
 	void MoveForward(float Throttle);
 	void MoveRight(float Throttle);
-
 	void RightTurn();
 	void LeftTurn();
-
 	void CorrectCameraOffset();
 
+	// Vignette
 	void StartFade(float start, float end);
 	void UpdateVignette();
-
-	void UpdateForearmTwist();
 
 	FVector2D GetMovementCenter();
 
 	UPROPERTY(EditAnywhere)
-		class UMaterialInterface* VignetteMaterialBase = nullptr;
+	class UMaterialInterface* VignetteMaterialBase = nullptr;
 
 	UPROPERTY(EditAnywhere)
-		class UCurveFloat* VignetteVelocityRadius = nullptr;
+	class UCurveFloat* VignetteVelocityRadius = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-		float MovementSpeedMultiplier = 0.2f;
+	float MovementSpeedMultiplier = 0.2f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-		float TeleportTime = 3.f;
+	float TeleportTime = 3.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup") // TODO REMOVE
-		float MaxTeleportDistance = 500;
+	float MaxTeleportDistance = 500;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup") // TODO REMOVE
-		float TeleportSimulationTime = 2;
+	float TeleportSimulationTime = 2;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-		float MaxTeleportSpeed = 750;
+	float MaxTeleportSpeed = 750;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-		float TeleportProjectileRadius = 10;
+	float TeleportProjectileRadius = 10;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-		int32 TurnStep = 15;
+	int32 TurnStep = 15;
 
 	UPROPERTY(VisibleAnywhere)
-		class UCameraComponent* Camera = nullptr;
+	class UCameraComponent* Camera = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
-		class USceneComponent* VRRoot = nullptr;
+	class USceneComponent* VRRoot = nullptr;
 
 	UPROPERTY(VisibleAnywhere) // Visible anywhere because you dont want to edit the pointer (*)
-		class UStaticMeshComponent* DestinationMarker = nullptr;
+	class UStaticMeshComponent* DestinationMarker = nullptr;
 
 	UPROPERTY()
-		class UPostProcessComponent* PostProcessComponent = nullptr;
+	class UPostProcessComponent* PostProcessComponent = nullptr;
 
 	UPROPERTY()
-		class UMaterialInstanceDynamic* VignetteInstanceDynamic = nullptr;
+	class UMaterialInstanceDynamic* VignetteInstanceDynamic = nullptr;
 
 };
