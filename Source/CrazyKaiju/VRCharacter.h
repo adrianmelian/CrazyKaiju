@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+#include "Components/SkeletalMeshComponent.h"
+
 #include "VRCharacter.generated.h"
 
 UCLASS()
@@ -32,6 +35,31 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class UMotionControllerComponent* MotionControllerRight;
+
+	// IK
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
+	class USkeletalMeshComponent* KaijuArmsRig = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
+	class USceneComponent* KaijuArmsPV_Left = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
+	class USceneComponent* KaijuArmsPV_Right = nullptr;
+
+	// Sets throttle between -1 and +1
+	UFUNCTION(BlueprintCallable)
+	void MoveIK(UMotionControllerComponent* MotionController, UStaticMeshComponent* IKTarget);
+	float CurrentThrottle = 0.f;
+
+	// Max Force to Track in Newtons
+	UPROPERTY(EditDefaultsOnly, Category = "Arm IK")
+	float MaxAcceleration = 10000000.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite,  Category = "Arm IK")
+	class UStaticMeshComponent* IKTarget_Left = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
+	class UStaticMeshComponent* IKTarget_Right = nullptr;
 
 private:
 	// Movement

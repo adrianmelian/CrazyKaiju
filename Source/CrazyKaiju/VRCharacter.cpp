@@ -33,6 +33,14 @@ AVRCharacter::AVRCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(VRRoot);
 
+	// Destination Marker
+	DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Destination Mesh"));
+	DestinationMarker->SetupAttachment(VRRoot);
+
+	// Post Processing Component
+	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("Post-Process Component"));
+	PostProcessComponent->SetupAttachment(VRRoot);
+
 	// Motion Controllers
 	MotionControllerLeft = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Motion Controller - Left"));
 	MotionControllerRight = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Motion Controller - Right"));
@@ -43,13 +51,21 @@ AVRCharacter::AVRCharacter()
 	MotionControllerLeft->SetVisibility(false);
 	MotionControllerRight->SetVisibility(false);
 
-	// Destination Marker
-	DestinationMarker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Destination Mesh"));
-	DestinationMarker->SetupAttachment(VRRoot);
+	//IK Arms
+	KaijuArmsRig = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Kaiju Arms Rig"));
+	KaijuArmsRig->SetupAttachment(Camera);
+	
+	KaijuArmsPV_Right = CreateDefaultSubobject<USceneComponent>(TEXT("KaijuArmsPV Right"));
+	KaijuArmsPV_Left = CreateDefaultSubobject<USceneComponent>(TEXT("KaijuArmsPV Left"));
+	KaijuArmsPV_Right->AttachToComponent(KaijuArmsRig, FAttachmentTransformRules::KeepRelativeTransform, FName("R_Wrist_Jnt"));
+	KaijuArmsPV_Left->AttachToComponent(KaijuArmsRig, FAttachmentTransformRules::KeepRelativeTransform, FName("L_Wrist_Jnt"));
 
-	// Post Processing Component
-	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("Post-Process Component"));
-	PostProcessComponent->SetupAttachment(VRRoot);
+	IKTarget_Left = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("IKTarget Left"));
+	IKTarget_Right = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("IKTarget Right"));
+	IKTarget_Left->SetupAttachment(VRRoot);
+	IKTarget_Right->SetupAttachment(VRRoot);
+	IKTarget_Left->SetVisibility(false);
+	IKTarget_Right->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -70,6 +86,9 @@ void AVRCharacter::Tick(float DeltaTime)
 
 	CorrectCameraOffset();
 	UpdateVignette();
+
+	MoveIK(MotionControllerLeft, IKTarget_Left);
+	MoveIK(MotionControllerRight, IKTarget_Right);
 }
 
 
@@ -141,6 +160,21 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(TEXT("RightTurn"), IE_Released, this, &AVRCharacter::RightTurn);
 	PlayerInputComponent->BindAction(TEXT("LeftTurn"), IE_Released, this, &AVRCharacter::LeftTurn);
 
+}
+
+void AVRCharacter::MoveIK(UMotionControllerComponent* MotionController, UStaticMeshComponent* IKTarget)
+{
+	FVector Destination_Loc = MotionController->GetComponentLocation();
+	FVector Target_Loc = IKTarget->GetComponentLocation();
+	FVector Direction = Destination_Loc - Target_Loc;
+	float Throttle = Direction.Size() / 100;
+	CurrentThrottle = FMath::Clamp<float>(CurrentThrottle + Throttle, 0, 1);
+
+	UE_LOG(LogTemp, Warning, TEXT("Target_Velocity = %f"), CurrentThrottle);
+
+	auto ForceApplied = Direction * CurrentThrottle * MaxAcceleration;
+	auto ForceLocation = IKTarget->GetComponentLocation();
+	IKTarget->AddForceAtLocation(ForceApplied, ForceLocation);
 }
 
 void AVRCharacter::MoveForward(float Throttle)

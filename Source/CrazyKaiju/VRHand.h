@@ -14,22 +14,33 @@ class CRAZYKAIJU_API AVRHand : public APawn
 public:
 	AVRHand();
 
-	//Motion Controllers
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	class UMotionControllerComponent* MotionControllerLeft;
+	USceneComponent* HandRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	class UMotionControllerComponent* MotionControllerRight;
+	// Sets throttle between -1 and +1
+	UFUNCTION(BlueprintCallable)
+	void SetThrottle();
 
-	UPROPERTY(VisibleAnywhere)
-	class USceneComponent* VRRoot = nullptr;
+	// Max Force to Track in Newtons
+	UPROPERTY(EditDefaultsOnly, Category = "Driving")
+	float MaxAcceleration = 40000000.f;
+
+	void MoveTarget();
+
+	float CurrentThrottle = 0.f;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	class USceneComponent* Destination = nullptr;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	class UStaticMeshComponent* Target = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };
+
