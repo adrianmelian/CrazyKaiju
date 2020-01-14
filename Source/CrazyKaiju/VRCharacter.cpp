@@ -60,12 +60,21 @@ AVRCharacter::AVRCharacter()
 	KaijuArmsPV_Right->AttachToComponent(KaijuArmsRig, FAttachmentTransformRules::KeepRelativeTransform, FName("R_Wrist_Jnt"));
 	KaijuArmsPV_Left->AttachToComponent(KaijuArmsRig, FAttachmentTransformRules::KeepRelativeTransform, FName("L_Wrist_Jnt"));
 
+	// IK Arms Physics
 	IKTarget_Left = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("IKTarget Left"));
 	IKTarget_Right = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("IKTarget Right"));
 	IKTarget_Left->SetupAttachment(VRRoot);
 	IKTarget_Right->SetupAttachment(VRRoot);
 	IKTarget_Left->SetVisibility(false);
 	IKTarget_Right->SetVisibility(false);
+	IKTarget_Left->SetSimulatePhysics(true);
+	IKTarget_Right->SetSimulatePhysics(true);
+	IKTarget_Left->SetEnableGravity(false);
+	IKTarget_Right->SetEnableGravity(false);
+	IKTarget_Left->SetLinearDamping(DampingAmount);
+	IKTarget_Right->SetLinearDamping(DampingAmount);
+	IKTarget_Left->SetAngularDamping(DampingAmount);
+	IKTarget_Right->SetAngularDamping(DampingAmount);
 }
 
 // Called when the game starts or when spawned
@@ -167,10 +176,10 @@ void AVRCharacter::MoveIK(UMotionControllerComponent* MotionController, UStaticM
 	FVector Destination_Loc = MotionController->GetComponentLocation();
 	FVector Target_Loc = IKTarget->GetComponentLocation();
 	FVector Direction = Destination_Loc - Target_Loc;
-	float Throttle = Direction.Size() / 100;
+	float Throttle = Direction.Size() / 500.f;
 	CurrentThrottle = FMath::Clamp<float>(CurrentThrottle + Throttle, 0, 1);
 
-	UE_LOG(LogTemp, Warning, TEXT("Target_Velocity = %f"), CurrentThrottle);
+	//UE_LOG(LogTemp, Warning, TEXT("Target_Velocity = %f"), CurrentThrottle);
 
 	auto ForceApplied = Direction * CurrentThrottle * MaxAcceleration;
 	auto ForceLocation = IKTarget->GetComponentLocation();

@@ -46,12 +46,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
 	class USceneComponent* KaijuArmsPV_Right = nullptr;
 
-	// Sets throttle between -1 and +1
 	UFUNCTION(BlueprintCallable)
 	void MoveIK(UMotionControllerComponent* MotionController, UStaticMeshComponent* IKTarget);
 	float CurrentThrottle = 0.f;
 
-	// Max Force to Track in Newtons
 	UPROPERTY(EditDefaultsOnly, Category = "Arm IK")
 	float MaxAcceleration = 10000000.f;
 
@@ -60,6 +58,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
 	class UStaticMeshComponent* IKTarget_Right = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Arm IK")
+	float DampingAmount = 10.f;
 
 private:
 	// Movement

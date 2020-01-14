@@ -28,11 +28,14 @@ void AVRHand::SetThrottle()
 	float Throttle = Direction.Size() / 100;
 	CurrentThrottle = FMath::Clamp<float>(CurrentThrottle + Throttle, -1, 1);
 
-	UE_LOG(LogTemp, Warning, TEXT("Target_Velocity = %f"), CurrentThrottle);
 
 	auto ForceApplied = Direction * CurrentThrottle * MaxAcceleration;
 	auto ForceLocation = Target->GetComponentLocation();
 	Target->AddForceAtLocation(ForceApplied, ForceLocation);
+
+	FVector NewRot = (Target->GetForwardVector() - Destination->GetForwardVector()) * 150;
+	UE_LOG(LogTemp, Warning, TEXT("NewRot = %s"), *NewRot.ToString());
+	Target->SetPhysicsAngularVelocityInDegrees(NewRot);
 }
 
 void AVRHand::MoveTarget()
