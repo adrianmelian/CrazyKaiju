@@ -34,7 +34,7 @@ void AVRHand::SetThrottle()
 	Target->AddForceAtLocation(ForceApplied, ForceLocation);
 
 	FVector NewRot = (Target->GetForwardVector() - Destination->GetForwardVector()) * 150;
-	UE_LOG(LogTemp, Warning, TEXT("NewRot = %s"), *NewRot.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("NewRot = %s"), *NewRot.ToString());
 	Target->SetPhysicsAngularVelocityInDegrees(NewRot);
 }
 
