@@ -31,10 +31,12 @@ public:
 
 	float CurrentThrottle = 0.f;
 
-	void AimAtPlayer(FVector AimDirection);
+	void AimAtPlayer();
+	void MoveForward();
+	void MoveVertically();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	float MaxDegreesPerSecond = 5.f;
+	float MaxDegreesPerSecond = 8.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	float MaxAcceleration = 40000000.f;
@@ -47,5 +49,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UPhysicsConstraintComponent* PhysicsConstraint = nullptr;
+
+private:
+	float MovementSpeed;
+	
+	FVector DestinationDirection;
 
 };

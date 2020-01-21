@@ -6,6 +6,7 @@
 #include "GameFramework/Controller.h"
 #include "Components/StaticMeshComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "Camera/CameraComponent.h"
 
 #include "EnemyHelicopter.h"
 
@@ -42,30 +43,23 @@ void AEnemyHelicopter::Tick(float DeltaTime)
 	auto PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	if (!ensure(PlayerPawn)) { return; }
 	
-	auto PlayerLocation = PlayerPawn->GetActorLocation();
+	auto PlayerLocation = PlayerPawn->FindComponentByClass<UCameraComponent>()->GetComponentLocation();
 	auto TargetLocation = Target->GetComponentLocation();
-	FVector Direction = PlayerLocation - TargetLocation;
+	DestinationDirection = PlayerLocation - TargetLocation;
 
 	// Aim Destination at player
-	AimAtPlayer(Direction);
-	/*
+	AimAtPlayer();
+
+	// Move up and down to match player
+	MoveVertically();
+
 	// Move Destination toward player, if distance is greater than X
-	
-	// Move Target toward destination
-	
-
-	
-	float Throttle = Direction.Size() / 100;
-	CurrentThrottle = FMath::Clamp<float>(CurrentThrottle + Throttle, -1, 1);
-
-	auto ForceApplied = Direction * CurrentThrottle * MaxAcceleration;
-	auto ForceLocation = Target->GetComponentLocation();
-	Target->AddForceAtLocation(ForceApplied, ForceLocation);
-	Target->AddForce(FVector(0, 0, 10000));
-
-	UE_LOG(LogTemp, Warning, TEXT("Player Location: %s"), *PlayerLocation.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Target Location: %s"), *TargetLocation.ToString());
-	*/
+	float DistanceToPlayer = DestinationDirection.Size();
+	UE_LOG(LogTemp, Warning, TEXT("Distance= %f"), DistanceToPlayer);
+	if (DistanceToPlayer > 200.f)
+	{
+		MoveForward();
+	}
 }
 
 // Called to bind functionality to input
@@ -75,11 +69,12 @@ void AEnemyHelicopter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 }
 
-void AEnemyHelicopter::AimAtPlayer(FVector AimDirection)
+void AEnemyHelicopter::AimAtPlayer()
 {
+	auto DestinationRot = DestinationDirection.GetSafeNormal().Rotation();
 	auto CurrentTargetRot = Target->GetForwardVector().Rotation();
-	auto DestinationRot = AimDirection.Rotation();
 	auto DeltaRot = DestinationRot - CurrentTargetRot;
+	MovementSpeed = 1 - (DestinationRot.Vector() - CurrentTargetRot.Vector()).Size();
 
 	auto DeltaYaw = FMath::Clamp<float>(DeltaRot.Yaw, -1.f, 1.f);
 	float YawRotateChange = (DeltaYaw * MaxDegreesPerSecond) * GetWorld()->DeltaTimeSeconds;
@@ -89,8 +84,20 @@ void AEnemyHelicopter::AimAtPlayer(FVector AimDirection)
 	float PitchRotateChange = (DeltaPitch * MaxDegreesPerSecond) * GetWorld()->DeltaTimeSeconds;
 	float PitchRotation = Target->RelativeRotation.Pitch + PitchRotateChange;
 
+	if (FMath::Abs(YawRotation) > 180) { YawRotation = -YawRotation; }
 	Target->SetRelativeRotation(FRotator(PitchRotation, YawRotation, 0));
+}
 
+void AEnemyHelicopter::MoveForward()
+{
+	auto TargetForward = Target->GetForwardVector();
+	Target->AddRelativeLocation(TargetForward * MovementSpeed);
+}
 
+void AEnemyHelicopter::MoveVertically()
+{
+	// Get height of head and target
+	auto HeightOffset = FMath::Clamp<float>(DestinationDirection.Z, -1.f, 1.f);
+	Target->AddRelativeLocation(FVector(0, 0, (HeightOffset * (MovementSpeed * 0.25f))));
 }
 
