@@ -33,10 +33,11 @@ public:
 
 	void AimAtPlayer();
 	void MoveForward();
+	void MoveBackward();
 	void MoveVertically();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	float MaxDegreesPerSecond = 8.f;
+	float MaxDegreesPerSecond = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	float MaxAcceleration = 40000000.f;

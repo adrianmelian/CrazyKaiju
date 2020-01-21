@@ -50,16 +50,19 @@ void AEnemyHelicopter::Tick(float DeltaTime)
 	// Aim Destination at player
 	AimAtPlayer();
 
-	// Move up and down to match player
-	MoveVertically();
 
 	// Move Destination toward player, if distance is greater than X
-	float DistanceToPlayer = DestinationDirection.Size();
-	UE_LOG(LogTemp, Warning, TEXT("Distance= %f"), DistanceToPlayer);
-	if (DistanceToPlayer > 200.f)
+	float DistanceToPlayer = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
+	UE_LOG(LogTemp, Warning, TEXT("DistanceToPlayer = %f"), DistanceToPlayer);
+	if (DistanceToPlayer > 50.f)
 	{
 		MoveForward();
 	}
+	else if (DistanceToPlayer < 50.f)
+	{
+		MoveBackward();
+	}
+
 }
 
 // Called to bind functionality to input
@@ -71,33 +74,37 @@ void AEnemyHelicopter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void AEnemyHelicopter::AimAtPlayer()
 {
-	auto DestinationRot = DestinationDirection.GetSafeNormal().Rotation();
+	auto DestinationRot = DestinationDirection.Rotation();
 	auto CurrentTargetRot = Target->GetForwardVector().Rotation();
 	auto DeltaRot = DestinationRot - CurrentTargetRot;
-	MovementSpeed = 1 - (DestinationRot.Vector() - CurrentTargetRot.Vector()).Size();
+
+	MovementSpeed = 1.f - (DestinationRot.Vector() - CurrentTargetRot.Vector()).Size();
 
 	auto DeltaYaw = FMath::Clamp<float>(DeltaRot.Yaw, -1.f, 1.f);
-	float YawRotateChange = (DeltaYaw * MaxDegreesPerSecond) * GetWorld()->DeltaTimeSeconds;
-	float YawRotation = Target->RelativeRotation.Yaw + YawRotateChange;
-
-	auto DeltaPitch = FMath::Clamp<float>(DeltaRot.Pitch, -1.f, 1.f);
-	float PitchRotateChange = (DeltaPitch * MaxDegreesPerSecond) * GetWorld()->DeltaTimeSeconds;
-	float PitchRotation = Target->RelativeRotation.Pitch + PitchRotateChange;
-
-	if (FMath::Abs(YawRotation) > 180) { YawRotation = -YawRotation; }
-	Target->SetRelativeRotation(FRotator(PitchRotation, YawRotation, 0));
+	float DeltaRotate = (DeltaYaw * MaxDegreesPerSecond) * GetWorld()->DeltaTimeSeconds;
+	Target->AddWorldRotation(FRotator(0, DeltaRotate, 0));
 }
 
 void AEnemyHelicopter::MoveForward()
 {
-	auto TargetForward = Target->GetForwardVector();
-	Target->AddRelativeLocation(TargetForward * MovementSpeed);
+	MovementSpeed = MovementSpeed * 100.f;
+	auto TargetForward = Target->GetComponentRotation().Vector();
+	Target->AddWorldOffset((TargetForward * MovementSpeed) * GetWorld()->DeltaTimeSeconds);
+}
+
+
+void AEnemyHelicopter::MoveBackward()
+{
+	MovementSpeed = MovementSpeed * 100.f;
+	auto TargetForward = Target->GetComponentRotation().Vector();
+	Target->AddWorldOffset((-TargetForward * MovementSpeed)* GetWorld()->DeltaTimeSeconds);
 }
 
 void AEnemyHelicopter::MoveVertically()
 {
 	// Get height of head and target
+	MovementSpeed = MovementSpeed * 0.25f;
 	auto HeightOffset = FMath::Clamp<float>(DestinationDirection.Z, -1.f, 1.f);
-	Target->AddRelativeLocation(FVector(0, 0, (HeightOffset * (MovementSpeed * 0.25f))));
+	//Target->AddWorldOffset(FVector(0, 0, ((HeightOffset * MovementSpeed) * GetWorld()->DeltaTimeSeconds)));
 }
 
