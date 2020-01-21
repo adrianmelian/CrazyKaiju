@@ -54,11 +54,11 @@ void AEnemyHelicopter::Tick(float DeltaTime)
 	// Move Destination toward player, if distance is greater than X
 	float DistanceToPlayer = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
 	UE_LOG(LogTemp, Warning, TEXT("DistanceToPlayer = %f"), DistanceToPlayer);
-	if (DistanceToPlayer > 50.f)
+	if (DistanceToPlayer > 150.f)
 	{
 		MoveForward();
 	}
-	else if (DistanceToPlayer < 50.f)
+	else if (DistanceToPlayer < 150.f)
 	{
 		MoveBackward();
 	}

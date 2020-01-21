@@ -48,7 +48,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UStaticMeshComponent* HelicopterMesh = nullptr;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(BlueprintReadWrite, Category = "Components")
 	class UPhysicsConstraintComponent* PhysicsConstraint = nullptr;
 
 private:
