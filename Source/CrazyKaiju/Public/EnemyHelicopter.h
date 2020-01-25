@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+
 #include "EnemyHelicopter.generated.h"
 
 UCLASS()
@@ -15,23 +16,8 @@ public:
 	// Sets default values for this pawn's properties
 	AEnemyHelicopter();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 public:
 	class USceneComponent* HeliRoot;
-
-	float CurrentThrottle = 0.f;
-
-	void MoveAtPlayer();
-	void MoveVertically();
-
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	float MaxDegreesPerSecond = 5.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	float MaxSpeed = 75.f;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Components")
 	class UStaticMeshComponent* Target = nullptr;
@@ -41,12 +27,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Components")
 	class UPhysicsConstraintComponent* PhysicsConstraint = nullptr;
-
-private:
-	float MovementSpeed = 10.f;
-
-	float DistanceToPlayer;
 	
-	FVector DestinationDirection;
+	UPROPERTY(BlueprintReadWrite, Category = "Components")
+	class UEnemyAimComponent* AimingComponent = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Components")
+	class UEnemyFlyingComponent* FlyingComponent = nullptr;
 
 };
