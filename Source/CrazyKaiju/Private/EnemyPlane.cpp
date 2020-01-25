@@ -63,7 +63,7 @@ void AEnemyPlane::MoveTowardPlayer()
 	// Aim at player
 	auto DesiredPlaneRot = UKismetMathLibrary::RInterpTo(CurrentPlaneRot, DeltaRot, DeltaTime, MaxRotationSpeed);
 	auto PlaneToPlayerDot = FVector::DotProduct(CurrentPlaneRot.Vector(), DeltaRot.Vector());
-	UE_LOG(LogTemp, Warning, TEXT("Dot = %f"), PlaneToPlayerDot);
+	//UE_LOG(LogTemp, Warning, TEXT("Dot = %f"), PlaneToPlayerDot);
 
 	PlaneMesh->SetWorldRotation(FRotator(0, DesiredPlaneRot.Yaw, 0));
 

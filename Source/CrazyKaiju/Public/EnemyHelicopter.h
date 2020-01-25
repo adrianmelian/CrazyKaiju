@@ -15,34 +15,25 @@ public:
 	// Sets default values for this pawn's properties
 	AEnemyHelicopter();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
 	class USceneComponent* HeliRoot;
 
 	float CurrentThrottle = 0.f;
 
-	void AimAtPlayer();
-	void MoveForward();
-	void MoveBackward();
+	void MoveAtPlayer();
 	void MoveVertically();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	float MaxDegreesPerSecond = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	float MaxAcceleration = 40000000.f;
+	float MaxSpeed = 75.f;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(BlueprintReadWrite, Category = "Components")
 	class UStaticMeshComponent* Target = nullptr;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -52,7 +43,9 @@ public:
 	class UPhysicsConstraintComponent* PhysicsConstraint = nullptr;
 
 private:
-	float MovementSpeed;
+	float MovementSpeed = 10.f;
+
+	float DistanceToPlayer;
 	
 	FVector DestinationDirection;
 

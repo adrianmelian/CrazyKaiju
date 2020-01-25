@@ -2,12 +2,14 @@
 
 
 #include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/Controller.h"
 #include "Components/StaticMeshComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Camera/CameraComponent.h"
 
+#include "EnemyAimComponent.h"
 #include "EnemyHelicopter.h"
 
 // Sets default values
@@ -27,77 +29,29 @@ AEnemyHelicopter::AEnemyHelicopter()
 
 }
 
-// Called when the game starts or when spawned
-void AEnemyHelicopter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
 // Called every frame
 void AEnemyHelicopter::Tick(float DeltaTime)
 {
-
 	Super::Tick(DeltaTime);
 	
+	MoveAtPlayer();
+}
+
+void AEnemyHelicopter::MoveAtPlayer()
+{
 	auto PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	if (!ensure(PlayerPawn)) { return; }
-	
-	auto PlayerLocation = PlayerPawn->FindComponentByClass<UCameraComponent>()->GetComponentLocation();
+
+	auto PlayerLocation = PlayerPawn->GetActorLocation();
 	auto TargetLocation = Target->GetComponentLocation();
 	DestinationDirection = PlayerLocation - TargetLocation;
 
-	// Aim Destination at player
-	AimAtPlayer();
-
-
 	// Move Destination toward player, if distance is greater than X
-	float DistanceToPlayer = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
-	
-	if (DistanceToPlayer > 150.f)
-	{
-		MoveForward();
-	}
-	else if (DistanceToPlayer < 150.f)
-	{
-		MoveBackward();
-	}
-
-}
-
-// Called to bind functionality to input
-void AEnemyHelicopter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
-void AEnemyHelicopter::AimAtPlayer()
-{
-	auto DestinationRot = DestinationDirection.Rotation();
-	auto CurrentTargetRot = Target->GetForwardVector().Rotation();
-	auto DeltaRot = DestinationRot - CurrentTargetRot;
-
-	MovementSpeed = 1.f - (DestinationRot.Vector() - CurrentTargetRot.Vector()).Size();
-
-	auto DeltaYaw = FMath::Clamp<float>(DeltaRot.Yaw, -1.f, 1.f);
-	float DeltaRotate = (DeltaYaw * MaxDegreesPerSecond) * GetWorld()->DeltaTimeSeconds;
-	Target->AddWorldRotation(FRotator(0, DeltaRotate, 0));
-}
-
-void AEnemyHelicopter::MoveForward()
-{
-	MovementSpeed = MovementSpeed * 100.f;
+	DistanceToPlayer = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
+	MovementSpeed = FMath::Clamp<float>(MovementSpeed + DistanceToPlayer, 0.f, MaxSpeed);
 	auto TargetForward = Target->GetComponentRotation().Vector();
+	if (DistanceToPlayer < 150.f) { TargetForward = -TargetForward; }
 	Target->AddWorldOffset((TargetForward * MovementSpeed) * GetWorld()->DeltaTimeSeconds);
-}
-
-
-void AEnemyHelicopter::MoveBackward()
-{
-	MovementSpeed = MovementSpeed * 100.f;
-	auto TargetForward = Target->GetComponentRotation().Vector();
-	Target->AddWorldOffset((-TargetForward * MovementSpeed)* GetWorld()->DeltaTimeSeconds);
 }
 
 void AEnemyHelicopter::MoveVertically()
