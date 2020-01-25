@@ -1,10 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Controller.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "VRCharacter.h"
 #include "EnemyPlane.h"
@@ -47,28 +49,29 @@ void AEnemyPlane::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void AEnemyPlane::MoveTowardPlayer()
 {
+
 	auto ThisWorld = GetWorld();
 	auto PlayerPawn = ThisWorld->GetFirstPlayerController()->GetPawn();
 	if (!ensure(PlayerPawn)) { return; }
 
-	auto PawnLocation = PlayerPawn->GetActorLocation();
-
-	auto DestinationDistance = PawnLocation - PlaneMesh->GetComponentLocation();
-	DestinationDirection = DestinationDistance.GetSafeNormal();
-	FRotator DestinationRot = DestinationDirection.Rotation();
-	FRotator CurrentTargetRot = PlaneMesh->GetComponentRotation();
-	FRotator DeltaRot = DestinationRot - CurrentTargetRot;
 	auto DeltaTime = ThisWorld->DeltaTimeSeconds;
+	auto PawnLocation = PlayerPawn->GetActorLocation();
+	auto DestinationDistance = PawnLocation - PlaneMesh->GetComponentLocation();
+	FRotator CurrentPlaneRot = PlaneMesh->GetComponentRotation();
+	FRotator DeltaRot = UKismetMathLibrary::FindLookAtRotation(PlaneMesh->GetComponentLocation(), PawnLocation);
 
 	// Aim at player
-	float DeltaYaw = FMath::Clamp<float>(DeltaRot.Yaw, -1.f, 1.f);
-	if (FMath::Abs(DeltaYaw) > 180) { DeltaYaw = -DeltaYaw; }
-	float DeltaRotate = (DeltaYaw * MaxDegreesPerSecond) * DeltaTime;
-	PlaneMesh->AddWorldRotation(FRotator(0, DeltaRotate, 0));
+	auto DesiredPlaneRot = UKismetMathLibrary::RInterpTo(CurrentPlaneRot, DeltaRot, DeltaTime, MaxRotationSpeed);
+	auto PlaneToPlayerDot = FVector::DotProduct(CurrentPlaneRot.Vector(), DeltaRot.Vector());
+	UE_LOG(LogTemp, Warning, TEXT("Dot = %f"), PlaneToPlayerDot);
+
+	PlaneMesh->SetWorldRotation(FRotator(0, DesiredPlaneRot.Yaw, 0));
 
 	// Move Forward
-	float MovementSpeed = FMath::Clamp<float>(MovementMaxSpeed - (DistanceToPlayer / 4), MovementMaxSpeed / 2, MovementMaxSpeed);
-	FVector TargetForward = CurrentTargetRot.Vector();
+	float MovementSpeed = FMath::Clamp<float>(MovementMaxSpeed - (DestinationDistance.Size() / 4), MovementMaxSpeed / 2, MovementMaxSpeed);
+	if (PlaneToPlayerDot > 0.f) { MovementSpeed = MovementSpeed * 2; }
+	//UE_LOG(LogTemp, Warning, TEXT("MovementSpeed = %f"), MovementSpeed);
+	FVector TargetForward = CurrentPlaneRot.Vector();
 	PlaneMesh->AddWorldOffset((TargetForward * MovementSpeed) * DeltaTime);
 }
 

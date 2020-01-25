@@ -34,7 +34,7 @@ public:
 	void MoveTowardPlayer();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	float MaxDegreesPerSecond = 45.0f;
+	float MaxRotationSpeed = 0.25f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UStaticMeshComponent* PlaneMesh = nullptr;
