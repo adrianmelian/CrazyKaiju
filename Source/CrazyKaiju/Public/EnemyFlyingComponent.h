@@ -35,8 +35,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	float HoverDistance = 150.f;
 	
-
-
 	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void Initialize(UStaticMeshComponent* TargetToSet);
 

@@ -41,6 +41,11 @@ void UEnemyAimComponent::Initialize(UStaticMeshComponent* TargetToSet)
 	Target = TargetToSet;
 }
 
+EFiringStatus UEnemyAimComponent::GetFiringStatus() const
+{
+	return FiringStatus;
+}
+
 void UEnemyAimComponent::AimAtPlayer()
 {
 	auto ThisWorld = GetWorld();
@@ -49,10 +54,32 @@ void UEnemyAimComponent::AimAtPlayer()
 
 	auto DeltaTime = ThisWorld->DeltaTimeSeconds;
 	auto PawnLocation = PlayerPawn->GetActorLocation();
-	FRotator CurrentPlaneRot = Target->GetComponentRotation();
-	FRotator DeltaRot = UKismetMathLibrary::FindLookAtRotation(Target->GetComponentLocation(), PawnLocation);
-
+	FRotator CurrentTargetRot = Target->GetComponentRotation();
+	float TargetToPawnDot = FVector::DotProduct(CurrentTargetRot.Vector(), PlayerPawn->GetActorRotation().Vector());
+	
 	// Aim at player
-	auto DesiredRot = UKismetMathLibrary::RInterpTo(CurrentPlaneRot, DeltaRot, DeltaTime, RotateSpeed);
+	FRotator DeltaRot = UKismetMathLibrary::FindLookAtRotation(Target->GetComponentLocation(), PawnLocation);
+	auto DesiredRot = UKismetMathLibrary::RInterpTo(CurrentTargetRot, DeltaRot, DeltaTime, RotateSpeed);
 	Target->SetWorldRotation(FRotator(0, DesiredRot.Yaw, 0));
+
+	// Determine Firing Status
+	if (ThisWorld->GetTimeSeconds() - LastFireTime < ReloadTime)
+	{
+		FiringStatus = EFiringStatus::Reloading;
+	}
+	else if (FMath::Abs(TargetToPawnDot) < 0.85)
+	{
+		FiringStatus = EFiringStatus::Aiming;
+	}
+	else
+	{
+		ShootAtPlayer();
+	}
+
+}
+
+void UEnemyAimComponent::ShootAtPlayer()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Shooting!"));
+	LastFireTime = GetWorld()->GetTimeSeconds();
 }

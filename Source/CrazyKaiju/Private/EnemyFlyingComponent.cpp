@@ -51,7 +51,7 @@ void UEnemyFlyingComponent::MoveAtPlayer()
 	auto DistanceToPlayer = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
 	MovementSpeed = FMath::Clamp<float>(MovementSpeed + DistanceToPlayer, 0.f, MaxSpeed);
 	auto TargetForward = Target->GetComponentRotation().Vector();
-	if (Hover && DistanceToPlayer < HoverDistance) { TargetForward = -TargetForward; }
+	if (Hover && DistanceToPlayer < HoverDistance) { TargetForward = -TargetForward/3; }
 	Target->AddWorldOffset((TargetForward * MovementSpeed) * DeltaTime);
 }
 

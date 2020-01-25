@@ -24,9 +24,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Components")
 	class UStaticMeshComponent* PlaneMesh = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	class UEnemyAimComponent* AimingComponent = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	class UEnemyFlyingComponent* FlyingComponent = nullptr;
 };
