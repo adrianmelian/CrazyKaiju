@@ -71,7 +71,6 @@ void UEnemyAimComponent::AimAtPlayer()
 	float DeltaTime = ThisWorld->DeltaTimeSeconds;
 	FVector PawnLocation = PlayerPawn->GetActorLocation();
 	FRotator CurrentTargetRot = Target->GetComponentRotation();
-
 	FVector TargetForward = Target->GetForwardVector();
 	FVector DestinationDirection = PlayerPawn->GetActorLocation() - Target->GetComponentLocation();
 	float TargetToPawnDot = FVector::DotProduct(FVector(TargetForward.X, TargetForward.Y, 0), FVector(DestinationDirection.X, DestinationDirection.Y, 0).GetSafeNormal());
@@ -79,7 +78,10 @@ void UEnemyAimComponent::AimAtPlayer()
 	// Aim at player
 	FRotator DeltaRot = UKismetMathLibrary::FindLookAtRotation(Target->GetComponentLocation(), PawnLocation);
 	FRotator DesiredRot = UKismetMathLibrary::RInterpTo(CurrentTargetRot, DeltaRot, DeltaTime, RotateSpeed);
-	Target->SetWorldRotation(FRotator(0, DesiredRot.Yaw, 0));
+	// Banking
+	auto TargetRightDot = FVector::DotProduct(Target->GetRightVector(), DestinationDirection.GetSafeNormal());
+	auto DesiredRoll = (TargetRightDot * 30);
+	Target->SetWorldRotation(FRotator(0, DesiredRot.Yaw, DesiredRoll));
 
 	// Determine Firing Status
 	if (ThisWorld->GetTimeSeconds() - LastFireTime < ReloadTime)

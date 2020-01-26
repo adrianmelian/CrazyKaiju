@@ -47,22 +47,8 @@ void UEnemyFlyingComponent::MoveAtPlayer()
 	auto PlayerLocation = PlayerPawn->GetActorLocation();
 	auto TargetLocation = Target->GetComponentLocation();
 	auto DestinationDirection = PlayerLocation - TargetLocation;
+	float DestinationDistance = DestinationDirection.Size();
 	auto TargetForward = Target->GetForwardVector();
-	
-	// Speed up movement if behind player
-	float TargetToPawnDot = FVector::DotProduct(FVector(TargetForward.X, TargetForward.Y, 0), FVector(DestinationDirection.X, DestinationDirection.Y, 0).GetSafeNormal());
-	/*
-	if (TargetToPawnDot < 0.f) 
-	{ 
-		MovementSpeed = MaxSpeed * (1 + FMath::Abs(TargetToPawnDot)); 
-	}
-	else
-	{
-		MovementSpeed = MaxSpeed * (2 - FMath::Abs(TargetToPawnDot));
-	}
-	*/
-
-	MovementSpeed = MaxSpeed;
 
 	// If Hovering
 	if (Hover)
@@ -75,6 +61,7 @@ void UEnemyFlyingComponent::MoveAtPlayer()
 	}
 	
 	// Move
+	MovementSpeed = MaxSpeed + (DestinationDistance * 0.1f);
 	Target->AddWorldOffset((TargetForward * MovementSpeed) * DeltaTime);
 }
 
