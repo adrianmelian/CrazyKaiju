@@ -42,6 +42,8 @@ public:
 
 	double LastFireTime = 0;
 
+	double LastPauseTime = 0;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float RotateSpeed = 1.f; 
 	
@@ -50,7 +52,20 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void Initialize(UStaticMeshComponent* TargetToSet);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	bool IntermittentAiming = false;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float IntermittentAimingTimeout = 15.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float IntermittentAimingDistance = 150.f;
 		
 private:
 	UStaticMeshComponent* Target = nullptr;
+
+	float MaxSpeed = 1.f;
+
+	bool PauseAiming = false;
 };

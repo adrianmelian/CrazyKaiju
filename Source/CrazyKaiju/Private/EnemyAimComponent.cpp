@@ -33,7 +33,23 @@ void UEnemyAimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (IntermittentAiming)
+	{
+		if (PauseAiming) 
+		{
+			if (GetWorld()->GetTimeSeconds() - LastPauseTime > IntermittentAimingTimeout)
+			{
+				PauseAiming = false;
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+
 	AimAtPlayer();
+
 }
 
 void UEnemyAimComponent::Initialize(UStaticMeshComponent* TargetToSet)
@@ -52,14 +68,17 @@ void UEnemyAimComponent::AimAtPlayer()
 	auto PlayerPawn = ThisWorld->GetFirstPlayerController()->GetPawn();
 	if (!ensure(Target && PlayerPawn)) { return; }
 
-	auto DeltaTime = ThisWorld->DeltaTimeSeconds;
-	auto PawnLocation = PlayerPawn->GetActorLocation();
+	float DeltaTime = ThisWorld->DeltaTimeSeconds;
+	FVector PawnLocation = PlayerPawn->GetActorLocation();
 	FRotator CurrentTargetRot = Target->GetComponentRotation();
-	float TargetToPawnDot = FVector::DotProduct(CurrentTargetRot.Vector(), PlayerPawn->GetActorRotation().Vector());
+
+	FVector TargetForward = Target->GetForwardVector();
+	FVector DestinationDirection = PlayerPawn->GetActorLocation() - Target->GetComponentLocation();
+	float TargetToPawnDot = FVector::DotProduct(FVector(TargetForward.X, TargetForward.Y, 0), FVector(DestinationDirection.X, DestinationDirection.Y, 0).GetSafeNormal());
 	
 	// Aim at player
 	FRotator DeltaRot = UKismetMathLibrary::FindLookAtRotation(Target->GetComponentLocation(), PawnLocation);
-	auto DesiredRot = UKismetMathLibrary::RInterpTo(CurrentTargetRot, DeltaRot, DeltaTime, RotateSpeed);
+	FRotator DesiredRot = UKismetMathLibrary::RInterpTo(CurrentTargetRot, DeltaRot, DeltaTime, RotateSpeed);
 	Target->SetWorldRotation(FRotator(0, DesiredRot.Yaw, 0));
 
 	// Determine Firing Status
@@ -67,13 +86,25 @@ void UEnemyAimComponent::AimAtPlayer()
 	{
 		FiringStatus = EFiringStatus::Reloading;
 	}
-	else if (FMath::Abs(TargetToPawnDot) < 0.85)
+	else if (TargetToPawnDot < 0.7f)
 	{
 		FiringStatus = EFiringStatus::Aiming;
 	}
 	else
 	{
 		ShootAtPlayer();
+	}
+
+	// Intermittent Aiming
+	if (IntermittentAiming)
+	{
+		float DestinationDistance = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
+		
+		if (DestinationDistance < IntermittentAimingDistance)
+		{
+			PauseAiming = true;
+			LastPauseTime = ThisWorld->GetTimeSeconds();
+		}
 	}
 
 }
