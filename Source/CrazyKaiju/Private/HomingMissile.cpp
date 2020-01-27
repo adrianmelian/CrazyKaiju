@@ -3,11 +3,15 @@
 #include "HomingMissile.h"
 
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/StaticMeshComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "PhysicsEngine/RadialForceComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "VRCharacter.h"
 
 // Sets default values
 AHomingMissile::AHomingMissile()
@@ -34,11 +38,15 @@ AHomingMissile::AHomingMissile()
 
 	// Particles
 	LaunchBlastParticles = CreateDefaultSubobject<UParticleSystemComponent>(FName("Launch Blast Particles"));
-	LaunchBlastParticles->AttachTo(MissileMesh);
+	LaunchBlastParticles->AttachToComponent(MissileMesh, FAttachmentTransformRules::KeepWorldTransform);
 
 	ImpactBlastParticles = CreateDefaultSubobject<UParticleSystemComponent>(FName("Immpact Blast Particles"));
 	ImpactBlastParticles->AttachToComponent(MissileMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	ImpactBlastParticles->bAutoActivate = false;
+
+	// Explosion Force
+	ExplosionForce = CreateDefaultSubobject<URadialForceComponent>(FName("Explosion Force"));
+	ExplosionForce->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called when the game starts or when spawned
@@ -47,7 +55,6 @@ void AHomingMissile::BeginPlay()
 	Super::BeginPlay();
 	
 	MissileMesh->OnComponentHit.AddDynamic(this, &AHomingMissile::OnHit);
-	//MissileMesh->OnComponentBeginOverlap.AddDynamic(this, &AHomingMissile::OnOverlapBegin);
 }
 
 // Called every frame
@@ -55,6 +62,24 @@ void AHomingMissile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	FlyAtPlayer();
+}
+
+void AHomingMissile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+
+	ImpactBlastParticles->Activate(); // Turn on hit explosion
+	LaunchBlastParticles->Deactivate(); // Turn off trailing smoke
+	ExplosionForce->FireImpulse(); // Apply force to hit actor
+
+	UGameplayStatics::ApplyRadialDamage(this, MissileDamage, GetActorLocation(), ExplosionForce->Radius, TSubclassOf<UDamageType>(), TArray<AActor*>());
+	UE_LOG(LogTemp, Warning, TEXT("Hit Something!"));
+
+	Destroy();
+}
+
+void AHomingMissile::FlyAtPlayer()
+{
 	auto ThisWorld = GetWorld();
 	auto PlayerPawn = ThisWorld->GetFirstPlayerController()->GetPawn();
 	if (!ensure(MissileMesh && PlayerPawn)) { return; }
@@ -63,18 +88,11 @@ void AHomingMissile::Tick(float DeltaTime)
 	auto PlayerHeadLoc = PlayerPawn->GetActorLocation();
 	PlayerHeadLoc.Z += 100.f;
 	auto WantedDir = (PlayerHeadLoc - GetActorLocation()).GetSafeNormal();
+	WantedDir += PlayerPawn->GetVelocity() * WantedDir.Size() / MissileSpeed;
 	ProjectileMovement->Velocity += (WantedDir * MissileSpeed) * DeltaSecs;
-	ProjectileMovement->Velocity = ProjectileMovement->Velocity;
-}
+	ProjectileMovement->Velocity = ProjectileMovement->Velocity.GetSafeNormal() * MissileSpeed;
 
-void AHomingMissile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Hit Something!"));
-	Destroy();
-}
-
-void AHomingMissile::OnOverlapBegin(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Overlapped Something!"));
-	Destroy();
+	FRotator DeltaRot = UKismetMathLibrary::FindLookAtRotation(MissileMesh->GetComponentLocation(), PlayerHeadLoc);
+	FRotator DesiredRot = UKismetMathLibrary::RInterpTo(MissileMesh->GetComponentRotation(), DeltaRot, DeltaSecs, 0.5f);
+	MissileMesh->SetWorldRotation(DesiredRot);
 }

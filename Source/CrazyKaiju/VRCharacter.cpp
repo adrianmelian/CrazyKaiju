@@ -205,3 +205,19 @@ void AVRCharacter::LeftTurn()
 {
 	VRRoot->AddWorldRotation(FRotator(0, -30, 0));
 }
+
+float AVRCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	int32 DamageInt = FMath::RoundToInt(Damage);
+	int32 DamageToApply = FMath::Clamp<int>(DamageInt, 0, CurrentHealth);
+
+	CurrentHealth -= DamageToApply;
+	UE_LOG(LogTemp, Warning, TEXT("Health: %i"), CurrentHealth);
+
+	return 0.0f;
+}
+
+float AVRCharacter::GetHeathPercent()
+{
+	return (float)CurrentHealth / (float)StartHealth;
+}

@@ -70,10 +70,15 @@ private:
 	void LeftTurn();
 	void CorrectCameraOffset();
 
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float MovementSpeedMultiplier = 0.2f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	int32 TurnStep = 15;
+
 	// Vignette
 	void StartFade(float start, float end);
 	void UpdateVignette();
-
 	FVector2D GetMovementCenter();
 
 	UPROPERTY(EditAnywhere)
@@ -82,9 +87,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UCurveFloat* VignetteVelocityRadius = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float MovementSpeedMultiplier = 0.2f;
-
+	// Teleport
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float TeleportTime = 3.f;
 
@@ -100,9 +103,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float TeleportProjectileRadius = 10;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	int32 TurnStep = 15;
-
+	// Components
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* Camera = nullptr;
 
@@ -118,4 +119,15 @@ private:
 	UPROPERTY()
 	class UMaterialInstanceDynamic* VignetteInstanceDynamic = nullptr;
 
+	// Health
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetHeathPercent();
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	int32 StartHealth = 100;
+
+	UPROPERTY(VisibleAnywhere, Category = "Health")
+	int32 CurrentHealth = StartHealth;
 };

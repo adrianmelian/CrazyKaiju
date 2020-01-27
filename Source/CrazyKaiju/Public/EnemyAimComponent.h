@@ -44,6 +44,18 @@ public:
 
 	double LastPauseTime = 0;
 
+	UFUNCTION(BlueprintCallable, Category = "Setup")
+	void Initialize(UStaticMeshComponent* TargetToSet, USceneComponent* MissileStartLocationToSet);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	bool IgnorePitch = true;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	bool LaunchProjectiles = true;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	bool IntermittentAiming = false;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float RotateSpeed = 1.f; 
 	
@@ -56,12 +68,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float ShootingMaxDistance = 500.f;
 
-	UFUNCTION(BlueprintCallable, Category = "Setup")
-	void Initialize(UStaticMeshComponent* TargetToSet, USceneComponent* MissileStartLocationToSet);
-
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	bool IntermittentAiming = false;
-	
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float IntermittentAimingTimeout = 15.f;
 

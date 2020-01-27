@@ -35,23 +35,28 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision")
 	class UBoxComponent* MissileRoot;
 
+	// Missile Properties
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float MissileSpeed = 750.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float MissileDamage = 10;
 
+	// Particle Systems
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UParticleSystemComponent* LaunchBlastParticles = nullptr;
+	class UParticleSystemComponent* LaunchBlastParticles = nullptr;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UParticleSystemComponent* ImpactBlastParticles = nullptr;
+	class UParticleSystemComponent* ImpactBlastParticles = nullptr;
+
+	// Explosion Force
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	class URadialForceComponent* ExplosionForce = nullptr;
 
 private:
 	// Event to Detect When an Actor Overlaps the Missile Class
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* overlappedComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& hitResult);
+	void FlyAtPlayer();
 };

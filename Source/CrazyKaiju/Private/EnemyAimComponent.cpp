@@ -75,7 +75,14 @@ void UEnemyAimComponent::AimAtPlayer()
 	FRotator CurrentTargetRot = Target->GetComponentRotation();
 	FVector TargetForward = Target->GetForwardVector();
 	FVector DestinationDirection = PlayerPawn->GetActorLocation() - Target->GetComponentLocation();
-	float TargetToPawnDot = FVector::DotProduct(FVector(TargetForward.X, TargetForward.Y, 0), FVector(DestinationDirection.X, DestinationDirection.Y, 0).GetSafeNormal());
+
+	if (IgnorePitch) 
+	{
+		TargetForward.Z = 0.f;
+		DestinationDirection.Z = 0.f;
+	}
+
+	float TargetToPawnDot = FVector::DotProduct(TargetForward, DestinationDirection.GetSafeNormal());
 	
 	// Aim at player
 	FRotator DeltaRot = UKismetMathLibrary::FindLookAtRotation(Target->GetComponentLocation(), PawnLocation);
@@ -84,7 +91,7 @@ void UEnemyAimComponent::AimAtPlayer()
 	auto TargetRightDot = FVector::DotProduct(Target->GetRightVector(), DestinationDirection.GetSafeNormal());
 	auto DesiredRoll = (TargetRightDot * 30);
 	Target->SetWorldRotation(FRotator(0, DesiredRot.Yaw, DesiredRoll));
-	float DestinationDistance = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
+	float DestinationDistance = DestinationDirection.Size();
 
 	// Intermittent Aiming
 	if (IntermittentAiming)
@@ -97,17 +104,20 @@ void UEnemyAimComponent::AimAtPlayer()
 	}
 
 	// Determine Firing Status
-	if (ThisWorld->GetTimeSeconds() - LastFireTime < ReloadTime)
+	if (LaunchProjectiles)
 	{
-		FiringStatus = EFiringStatus::Reloading;
-	}
-	else if (TargetToPawnDot < 0.7f)
-	{
-		FiringStatus = EFiringStatus::Aiming;
-	}
-	else if (DestinationDistance > ShootingMinDistance && DestinationDistance < ShootingMaxDistance)
-	{
-		ShootAtPlayer();
+		if (ThisWorld->GetTimeSeconds() - LastFireTime < ReloadTime)
+		{
+			FiringStatus = EFiringStatus::Reloading;
+		}
+		else if (TargetToPawnDot < 0.7f)
+		{
+			FiringStatus = EFiringStatus::Aiming;
+		}
+		else if (DestinationDistance > ShootingMinDistance&& DestinationDistance < ShootingMaxDistance)
+		{
+			ShootAtPlayer();
+		}
 	}
 }
 
