@@ -9,6 +9,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/StaticMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "NiagaraComponent.h"
 #include "PhysicsEngine/RadialForceComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "VRCharacter.h"
@@ -37,10 +38,10 @@ AHomingMissile::AHomingMissile()
 	ProjectileMovement->Velocity = FVector(0, 0, 0);
 
 	// Particles
-	LaunchBlastParticles = CreateDefaultSubobject<UParticleSystemComponent>(FName("Launch Blast Particles"));
+	LaunchBlastParticles = CreateDefaultSubobject<UNiagaraComponent>(FName("Launch Blast Particles"));
 	LaunchBlastParticles->AttachToComponent(MissileMesh, FAttachmentTransformRules::KeepWorldTransform);
 
-	ImpactBlastParticles = CreateDefaultSubobject<UParticleSystemComponent>(FName("Immpact Blast Particles"));
+	ImpactBlastParticles = CreateDefaultSubobject<UNiagaraComponent>(FName("Immpact Blast Particles"));
 	ImpactBlastParticles->AttachToComponent(MissileMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	ImpactBlastParticles->bAutoActivate = false;
 

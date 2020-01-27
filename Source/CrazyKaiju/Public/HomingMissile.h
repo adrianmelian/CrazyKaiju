@@ -44,14 +44,16 @@ public:
 
 	// Particle Systems
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	class UParticleSystemComponent* LaunchBlastParticles = nullptr;
+	class UNiagaraComponent* LaunchBlastParticles = nullptr;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	class UParticleSystemComponent* ImpactBlastParticles = nullptr;
+	class UNiagaraComponent* ImpactBlastParticles = nullptr;
 
 	// Explosion Force
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class URadialForceComponent* ExplosionForce = nullptr;
+
+	//class UNiagaraComponent* 
 
 private:
 	// Event to Detect When an Actor Overlaps the Missile Class
