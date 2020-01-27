@@ -49,9 +49,15 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float ReloadTime = 10.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float ShootingMinDistance = 250.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	float ShootingMaxDistance = 500.f;
 
 	UFUNCTION(BlueprintCallable, Category = "Setup")
-	void Initialize(UStaticMeshComponent* TargetToSet);
+	void Initialize(UStaticMeshComponent* TargetToSet, USceneComponent* MissileStartLocationToSet);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	bool IntermittentAiming = false;
@@ -61,9 +67,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	float IntermittentAimingDistance = 150.f;
+
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	TSubclassOf<class AHomingMissile> HomingMissile_BP = nullptr;
 		
 private:
 	UStaticMeshComponent* Target = nullptr;
+
+	USceneComponent* MissileStartLocation = nullptr;
 
 	float MaxSpeed = 1.f;
 

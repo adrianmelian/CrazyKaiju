@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/PlayerController.h"
 
+#include "HomingMissile.h"
 #include "EnemyAimComponent.h"
 
 // Sets default values for this component's properties
@@ -23,8 +24,8 @@ void UEnemyAimComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	// Randomize reload time a little
+	ReloadTime = FMath::RandRange((ReloadTime * 0.75f), (ReloadTime * 1.25f));
 }
 
 
@@ -52,9 +53,10 @@ void UEnemyAimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 }
 
-void UEnemyAimComponent::Initialize(UStaticMeshComponent* TargetToSet)
+void UEnemyAimComponent::Initialize(UStaticMeshComponent* TargetToSet, USceneComponent* MissileStartLocationToSet)
 {
 	Target = TargetToSet;
+	MissileStartLocation = MissileStartLocationToSet;
 }
 
 EFiringStatus UEnemyAimComponent::GetFiringStatus() const
@@ -82,6 +84,17 @@ void UEnemyAimComponent::AimAtPlayer()
 	auto TargetRightDot = FVector::DotProduct(Target->GetRightVector(), DestinationDirection.GetSafeNormal());
 	auto DesiredRoll = (TargetRightDot * 30);
 	Target->SetWorldRotation(FRotator(0, DesiredRot.Yaw, DesiredRoll));
+	float DestinationDistance = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
+
+	// Intermittent Aiming
+	if (IntermittentAiming)
+	{
+		if (DestinationDistance < IntermittentAimingDistance)
+		{
+			PauseAiming = true;
+			LastPauseTime = ThisWorld->GetTimeSeconds();
+		}
+	}
 
 	// Determine Firing Status
 	if (ThisWorld->GetTimeSeconds() - LastFireTime < ReloadTime)
@@ -92,27 +105,20 @@ void UEnemyAimComponent::AimAtPlayer()
 	{
 		FiringStatus = EFiringStatus::Aiming;
 	}
-	else
+	else if (DestinationDistance > ShootingMinDistance && DestinationDistance < ShootingMaxDistance)
 	{
 		ShootAtPlayer();
 	}
-
-	// Intermittent Aiming
-	if (IntermittentAiming)
-	{
-		float DestinationDistance = FVector(DestinationDirection.X, DestinationDirection.Y, 0).Size();
-		
-		if (DestinationDistance < IntermittentAimingDistance)
-		{
-			PauseAiming = true;
-			LastPauseTime = ThisWorld->GetTimeSeconds();
-		}
-	}
-
 }
 
 void UEnemyAimComponent::ShootAtPlayer()
 {
+	if (!ensure(HomingMissile_BP)) { return; }
+
 	UE_LOG(LogTemp, Warning, TEXT("Shooting!"));
+	GetWorld()->SpawnActor<AHomingMissile>(HomingMissile_BP, MissileStartLocation->GetComponentLocation(), MissileStartLocation->GetComponentRotation());
+
 	LastFireTime = GetWorld()->GetTimeSeconds();
+	// Randomize reload time a little
+	ReloadTime = FMath::RandRange((ReloadTime * 0.75f), (ReloadTime * 1.25f));
 }
