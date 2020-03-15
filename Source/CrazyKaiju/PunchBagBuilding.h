@@ -18,6 +18,9 @@ public:
 	// Sets default values for this actor's properties
 	APunchBagBuilding();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Destructible)
+	class UDestructibleComponent* DestructibleMesh;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Setup)
 	class UPhysicsConstraintComponent* PhysicsConstraint;
 	
@@ -30,6 +33,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Setup)
 	class USkeletalMeshComponent* MovableSkeletalMesh;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Setup)
+	float RequiredHitStrength = 35000000.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Setup)
+	int HitPoints = 3;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,4 +47,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	float HitTimeDelay = 0.5f;
+
+	// Event to Detect When an Actor Hit the building
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+private:
+	float LastHitTime = 0.0f;
+
+	int HitCount = 0;
 };
