@@ -18,11 +18,17 @@ APunchBagBuilding::APunchBagBuilding()
 	MovableMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Movable Mesh"));
 	MovableMesh->SetupAttachment(RootComponent);
 	MovableMesh->SetSimulatePhysics(true);
-	MovableMesh->SetCollisionProfileName("Enemy");
+	MovableMesh->SetCollisionProfileName(TEXT("Enemy"));
 	MovableMesh->SetEnableGravity(false);
 
 	PhysicsConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Physics Constaint"));
 	PhysicsConstraint->SetupAttachment(RootComponent);
+
+	DestructibleComponent2 = CreateDefaultSubobject<UDestructibleComponent>(TEXT("Destructible Component2"));
+	DestructibleComponent2->SetupAttachment(RootComponent);
+	//DestructibleMesh->SetSimulatePhysics(false);
+	//DestructibleMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//DestructibleMesh->SetVisibility(false);
 
 }
 
@@ -32,7 +38,6 @@ void APunchBagBuilding::BeginPlay()
 	Super::BeginPlay();
 	
 	MovableMesh->OnComponentHit.AddDynamic(this, &APunchBagBuilding::OnHit);
-
 	LastHitTime = GetWorld()->GetTimeSeconds();
 }
 
@@ -55,7 +60,7 @@ void APunchBagBuilding::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 
 	// Get hit strength
 	auto ImpactStrength = NormalImpulse.Size();
-
+	UE_LOG(LogTemp, Warning, TEXT("ImpactStrength: %f"), ImpactStrength);
 	// Play sound and vfx
 
 	// Count Hits if impact was strong enough
@@ -65,20 +70,54 @@ void APunchBagBuilding::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 		UE_LOG(LogTemp, Warning, TEXT("I'm Hit!"));
 	}
 
-	// If HitPoint are exceeded destroy the building!
+	// If HitPoint are exceeded, destroy the building!
 	if (HitCount >= HitPoints)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Ma Ma Mia!"));
-		// Hide MovableMesh & Collision
-		PhysicsConstraint->SetHiddenInGame(true);
-		MovableMesh->SetHiddenInGame(true);
-		MovableMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		MovableMesh->SetSimulatePhysics(false);
+		FVector Buildinglocation = MovableMesh->GetRelativeLocation();
+		FRotator BuildingRotation = MovableMesh->GetRelativeRotation();
+
+		UE_LOG(LogTemp, Warning, TEXT("Building Destroyed!"));
+		MovableMesh->DestroyComponent();
 		
-		// Add destructible component
-		// Set Destructible mesh
+		DestructibleComponent2->SetSkeletalMesh(DestructibleMesh);
+		
+		//auto SpawnedDestructibleMesh = NewObject<UDestructibleMesh>(this, MainDestructibleMesh);
+		//SpawnedDestructibleMesh->SetSkeletalMesh
+		//auto SpawnedDestructibleMesh = GetWorld()->SpawnActor<UDestructibleMesh>(MainDestructibleMesh, Buildinglocation, BuildingRotation);
+		/*
+		bool BuildingDestroyed = DestroyBuildingMesh();
+		if (BuildingDestroyed) {
+			SpawnDestructibleMesh();
+		}
+		*/
 	}
 
 	LastHitTime = CurrentHitTime;
 }
+
+bool APunchBagBuilding::DestroyBuildingMesh()
+{
+	// Hide MovableMesh & Collision
+	PhysicsConstraint->SetHiddenInGame(true);
+	MovableMesh->SetVisibility(false);
+	//MovableMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MovableMesh->SetSimulatePhysics(false);
+	//MovableMesh->SetGenerateOverlapEvents(false);
+	MovableMesh->DestroyComponent();
+
+	return true;
+}
+
+void APunchBagBuilding::SpawnDestructibleMesh()
+{
+
+	//GetWorld()->SpawnActor<UDestructibleComponent>(DestructibleMesh);
+	//DestructibleMesh = CreateDefaultSubobject<UDestructibleComponent>(TEXT("Destructible Mesh"));
+	//DestructibleMesh->SetupAttachment(RootComponent);
+	//DestructibleMesh->SetVisibility(true);
+	//DestructibleMesh->SetHiddenInGame(false);
+	//DestructibleMesh->SetSimulatePhysics(true);
+	//DestructibleMesh->SetCollisionProfileName(TEXT("Destructible"));
+}
+
 

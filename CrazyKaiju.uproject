@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "4.23",
+	"EngineAssociation": "4.24",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -14,10 +14,6 @@
 		}
 	],
 	"Plugins": [
-		{
-			"Name": "HoudiniEngine",
-			"Enabled": true
-		},
 		{
 			"Name": "ApexDestruction",
 			"Enabled": true
