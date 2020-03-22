@@ -84,6 +84,8 @@ public:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	void DamageDestructible(UPrimitiveComponent* OtherComp, FVector HitLocation);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Punching")
 	float BaseDamage = 200.f;
 
@@ -92,6 +94,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Punching")
 	float ImpulseStrength = 100000.f;
+
+	UPROPERTY(EditAnywhere)
+	float LineTraceRange = 1000.f;
 
 private:
 	// Movement
@@ -106,6 +111,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	int32 TurnStep = 15;
+
+	// Laser Attack
+	void LaserAttack();
 
 	// Vignette
 	void StartFade(float start, float end);

@@ -87,10 +87,83 @@ void AVRCharacter::Tick(float DeltaTime)
 	MoveIK(MotionControllerRight, IKTarget_Right);
 }
 
+// Punching
+void AVRCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	DamageDestructible(OtherComp, Hit.Location);
+}
+
+void AVRCharacter::DamageDestructible(UPrimitiveComponent* OtherComp, FVector HitLocation)
+{
+	UDestructibleComponent* Building = Cast<UDestructibleComponent>(OtherComp);
+	if (Building == nullptr) { return; }
+
+	Building->ApplyRadiusDamage(BaseDamage, HitLocation, DamageRadius, ImpulseStrength, false);
+}
+
+// Movement
+void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
+	PlayerInputComponent->BindAction(TEXT("RightTurn"), IE_Released, this, &AVRCharacter::RightTurn);
+	PlayerInputComponent->BindAction(TEXT("LeftTurn"), IE_Released, this, &AVRCharacter::LeftTurn);
+	PlayerInputComponent->BindAction(TEXT("KaijuBeam"), IE_Pressed, this, &AVRCharacter::LaserAttack);
+
+}
+void AVRCharacter::MoveIK(UMotionControllerComponent* MotionController, UStaticMeshComponent* IKTarget)
+{
+	FVector Destination_Loc = MotionController->GetComponentLocation();
+	FVector Target_Loc = IKTarget->GetComponentLocation();
+	FVector Direction = Destination_Loc - Target_Loc;
+	float Throttle = Direction.Size() / 500.f;
+	CurrentThrottle = FMath::Clamp<float>(CurrentThrottle + Throttle, 0, 1);
+
+	//UE_LOG(LogTemp, Warning, TEXT("Target_Velocity = %f"), CurrentThrottle);
+
+	auto ForceApplied = Direction * CurrentThrottle * MaxAcceleration;
+	auto ForceLocation = IKTarget->GetComponentLocation();
+	IKTarget->AddForceAtLocation(ForceApplied, ForceLocation);
+}
+
+void AVRCharacter::MoveForward(float Throttle)
+{
+	AddMovementInput((Throttle * MovementSpeedMultiplier) * Camera->GetForwardVector());
+}
+
+void AVRCharacter::MoveRight(float Throttle)
+{
+	AddMovementInput((Throttle * MovementSpeedMultiplier) * Camera->GetRightVector());
+}
+
+void AVRCharacter::RightTurn()
+{
+	VRRoot->AddWorldRotation(FRotator(0, 30, 0));
+}
+
+void AVRCharacter::LeftTurn()
+{
+	VRRoot->AddWorldRotation(FRotator(0, -30, 0));
+}
+
+void AVRCharacter::LaserAttack()
+{
+	FHitResult HitResult;
+	FVector StartLocation = Camera->GetComponentLocation();
+	FVector LookDirection = Camera->GetForwardVector();
+	FVector EndLocation = StartLocation + (LookDirection * LineTraceRange);
+
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Visibility))
+	{
+		auto OtherComp = HitResult.GetComponent();
+		DamageDestructible(OtherComp, HitResult.Location);
+	}
+}
 
 void AVRCharacter::StartFade(float start, float end)
 {
-	// Fade
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController != nullptr)
 	{
@@ -146,53 +219,7 @@ void AVRCharacter::CorrectCameraOffset()
 	VRRoot->AddWorldOffset(-CameraOffset);
 }
 
-// Called to bind functionality to input
-void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis(TEXT("Forward"), this, &AVRCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
-	PlayerInputComponent->BindAction(TEXT("RightTurn"), IE_Released, this, &AVRCharacter::RightTurn);
-	PlayerInputComponent->BindAction(TEXT("LeftTurn"), IE_Released, this, &AVRCharacter::LeftTurn);
-
-}
-
-void AVRCharacter::MoveIK(UMotionControllerComponent* MotionController, UStaticMeshComponent* IKTarget)
-{
-	FVector Destination_Loc = MotionController->GetComponentLocation();
-	FVector Target_Loc = IKTarget->GetComponentLocation();
-	FVector Direction = Destination_Loc - Target_Loc;
-	float Throttle = Direction.Size() / 500.f;
-	CurrentThrottle = FMath::Clamp<float>(CurrentThrottle + Throttle, 0, 1);
-
-	//UE_LOG(LogTemp, Warning, TEXT("Target_Velocity = %f"), CurrentThrottle);
-
-	auto ForceApplied = Direction * CurrentThrottle * MaxAcceleration;
-	auto ForceLocation = IKTarget->GetComponentLocation();
-	IKTarget->AddForceAtLocation(ForceApplied, ForceLocation);
-}
-
-void AVRCharacter::MoveForward(float Throttle)
-{
-	AddMovementInput((Throttle * MovementSpeedMultiplier) * Camera->GetForwardVector());
-}
-
-void AVRCharacter::MoveRight(float Throttle)
-{
-	AddMovementInput((Throttle * MovementSpeedMultiplier) * Camera->GetRightVector());
-}
-
-void AVRCharacter::RightTurn()
-{
-	VRRoot->AddWorldRotation(FRotator(0, 30, 0));
-}
-
-void AVRCharacter::LeftTurn()
-{
-	VRRoot->AddWorldRotation(FRotator(0, -30, 0));
-}
-
+// Health & Damage
 float AVRCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	int32 DamageInt = FMath::RoundToInt(Damage);
@@ -207,13 +234,4 @@ float AVRCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 float AVRCharacter::GetHeathPercent()
 {
 	return (float)CurrentHealth / (float)StartHealth;
-}
-
-void AVRCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	UDestructibleComponent* Building = Cast<UDestructibleComponent>(OtherComp);
-	if (Building == nullptr) { return; }
-
-	Building->ApplyRadiusDamage(BaseDamage, Hit.Location, DamageRadius, ImpulseStrength, false);
-
 }
