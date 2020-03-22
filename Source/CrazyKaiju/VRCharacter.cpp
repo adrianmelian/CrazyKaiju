@@ -110,7 +110,7 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis(TEXT("Right"), this, &AVRCharacter::MoveRight);
 	PlayerInputComponent->BindAction(TEXT("RightTurn"), IE_Released, this, &AVRCharacter::RightTurn);
 	PlayerInputComponent->BindAction(TEXT("LeftTurn"), IE_Released, this, &AVRCharacter::LeftTurn);
-	PlayerInputComponent->BindAction(TEXT("KaijuBeam"), IE_Pressed, this, &AVRCharacter::LaserAttack);
+	PlayerInputComponent->BindAction(TEXT("KaijuBeam"), IE_Repeat, this, &AVRCharacter::LaserAttack);
 
 }
 void AVRCharacter::MoveIK(UMotionControllerComponent* MotionController, UStaticMeshComponent* IKTarget)
