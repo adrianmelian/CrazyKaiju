@@ -22,7 +22,7 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/Pawn.h"
 #include "NavigationSystem.h"
-//#include "DestructibleComponent.h"
+#include "DestructibleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "VRCharacter.generated.h"
@@ -80,11 +80,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Arm IK")
 	float DampingAmount = 10.f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
-	class UChildActorComponent* SimHand_Left;
+	// Punching functionality
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
-	class UChildActorComponent* SimHand_Right;
+	UPROPERTY(EditDefaultsOnly, Category = "Punching")
+	float BaseDamage = 200.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Punching")
+	float DamageRadius = 100.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Punching")
+	float ImpulseStrength = 100000.f;
 
 private:
 	// Movement

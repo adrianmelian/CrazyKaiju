@@ -59,10 +59,6 @@ AVRCharacter::AVRCharacter()
 	IKTarget_Right->SetLinearDamping(DampingAmount);
 	IKTarget_Left->SetAngularDamping(DampingAmount);
 	IKTarget_Right->SetAngularDamping(DampingAmount);
-
-	//Sim Hands
-	SimHand_Left = CreateDefaultSubobject<UChildActorComponent>(TEXT("SimHand Left"));
-	SimHand_Left->AttachTo(VRRoot);
 }
 
 // Called when the game starts or when spawned
@@ -74,6 +70,9 @@ void AVRCharacter::BeginPlay()
 	if (VignetteMaterialBase == nullptr) return;
 	VignetteInstanceDynamic = UMaterialInstanceDynamic::Create(VignetteMaterialBase, this);
 	PostProcessComponent->AddOrUpdateBlendable(VignetteInstanceDynamic);
+
+	IKTarget_Left->OnComponentHit.AddDynamic(this, &AVRCharacter::OnHit);
+	IKTarget_Right->OnComponentHit.AddDynamic(this, &AVRCharacter::OnHit);
 }
 
 // Called every frame
@@ -208,4 +207,13 @@ float AVRCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 float AVRCharacter::GetHeathPercent()
 {
 	return (float)CurrentHealth / (float)StartHealth;
+}
+
+void AVRCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	UDestructibleComponent* Building = Cast<UDestructibleComponent>(OtherComp);
+	if (Building == nullptr) { return; }
+
+	Building->ApplyRadiusDamage(BaseDamage, Hit.Location, DamageRadius, ImpulseStrength, false);
+
 }
