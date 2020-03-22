@@ -6,6 +6,24 @@
 #include "GameFramework/Character.h"
 
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/ChildActorComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Curves/CurveFloat.h"
+#include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Components/InputComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/PostProcessComponent.h"
+#include "XRMotionControllerBase.h"
+#include "MotionControllerComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
+#include "NavigationSystem.h"
+//#include "DestructibleComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "VRCharacter.generated.h"
 
@@ -61,6 +79,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Arm IK")
 	float DampingAmount = 10.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
+	class UChildActorComponent* SimHand_Left;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Arm IK")
+	class UChildActorComponent* SimHand_Right;
 
 private:
 	// Movement
@@ -130,4 +154,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 	int32 CurrentHealth = StartHealth;
+
+	class USphereComponent* SimHandCollision_Left = nullptr;
 };

@@ -2,22 +2,6 @@
 
 //#include "Engine/World.h"
 #include "VRCharacter.h"
-#include "Engine/StaticMesh.h"
-#include "Curves/CurveFloat.h"
-#include "Camera/CameraComponent.h"
-#include "Camera/PlayerCameraManager.h"
-#include "Components/InputComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/PostProcessComponent.h"
-#include "XRMotionControllerBase.h"
-#include "MotionControllerComponent.h"
-#include "Materials/MaterialInstanceDynamic.h"
-#include "GameFramework/PlayerController.h"
-#include "GameFramework/Actor.h"
-#include "GameFramework/Pawn.h"
-#include "NavigationSystem.h"
-//#include "DestructibleComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -75,6 +59,10 @@ AVRCharacter::AVRCharacter()
 	IKTarget_Right->SetLinearDamping(DampingAmount);
 	IKTarget_Left->SetAngularDamping(DampingAmount);
 	IKTarget_Right->SetAngularDamping(DampingAmount);
+
+	//Sim Hands
+	SimHand_Left = CreateDefaultSubobject<UChildActorComponent>(TEXT("SimHand Left"));
+	SimHand_Left->AttachTo(VRRoot);
 }
 
 // Called when the game starts or when spawned
